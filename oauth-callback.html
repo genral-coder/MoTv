@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OAuth Callback</title>
+<style>
+  body { background:#0b0f1a; color:#e6ecff; font-family:system-ui,-apple-system,sans-serif;
+         display:flex; align-items:center; justify-content:center; height:100vh; margin:0; }
+  .box { text-align:center; max-width:520px; padding:24px; }
+  code { background:#1a2233; padding:2px 8px; border-radius:4px; word-break:break-all; }
+</style>
+</head>
+<body>
+<div class="box">
+  <h2 id="status">Finishing sign-in&hellip;</h2>
+  <p>If this page does not close by itself, copy the code below, then paste it into the app.</p>
+  <p><code id="code">-</code></p>
+  <p><button id="copy" style="padding:8px 18px;cursor:pointer">Copy code</button></p>
+</div>
+<script>
+(function () {
+  var p = new URLSearchParams(window.location.search);
+  var code = p.get("code") || "";
+  var err = p.get("error") || "";
+  var local = "http://127.0.0.1:18080/oauth/callback";
+  if (err) {
+    var desc = encodeURIComponent(p.get("error_description") || "");
+    window.location.replace(local + "?error=" + encodeURIComponent(err) + "&error_description=" + desc);
+    return;
+  }
+  if (code) {
+    document.getElementById("code").textContent = code;
+    try { window.location.replace(local + "?code=" + encodeURIComponent(code)); } catch (e) {}
+  } else {
+    document.getElementById("status").textContent = "No authorization code found. Close this tab and try again.";
+  }
+  document.getElementById("copy").addEventListener("click", function () {
+    var codeEl = document.getElementById("code");
+    var range = document.createRange();
+    range.selectNodeContents(codeEl);
+    var sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+    try { document.execCommand("copy"); } catch (e) {}
+  });
+})();
+</script>
+</body>
+</html>
